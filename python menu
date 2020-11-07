@@ -1,0 +1,182 @@
+import xml.etree.ElementTree as ET
+import os
+
+# configure docker
+def docker() :
+			#os.system('clear')
+			
+			print('''1.Install docker  2.Run docker  3.Docker Status  4.Images install  5. Image List \t 6.Run/Launch container''')
+			ii=int(input('Enter choice: '))
+			if ii==1:
+				os.system("dnf config-manager --add-repo=https://download.docker.com/linux/centos/docker-ce.repo")
+				os.system("dnf install docker-ce --nobest")
+			elif ii==2:
+				os.system('systemctl start docker')
+			elif ii==3:
+				os.system('systemctl status docker')
+			elif ii==4:
+				os=input('Enter os you want to install:')
+				os.system('docker pull{}'.format(os))
+			elif ii==5 :
+				os.system('docker images')
+			elif ii==6 :
+				on=input('give osname:')
+				os.system('docker images')
+				oi=input('Slect os:')
+				os.system('docker run -it --name {} {}'.format(on,oi))
+				
+			else:
+				print('Enter valid choice')
+
+
+#configure  webserver			
+def webserver() :
+		os.system('clear')
+		print('''1.install httpd   2. start httpd  3.Configure httpd  4.open file on webserver ''')
+		ii=int(input('enter choice:'))
+		if ii==1:
+			os.system("dnf install httpd")
+		elif ii==2:
+			os.system('systemctl start httpd')
+		elif ii==3:
+			os.chdir('/var/www/html')
+			fl=input('Flie name (.html):')
+			print('Enter data in file  use (ctrl+d) to save and exit')
+			os.system('cat > {}'.format(fl))
+			
+		elif ii==4:
+			os.system('ifconfig enp0s3')
+			a=input('Enter IP       =')
+			b=input('Enter file name=')
+			os.system('curl http://{}/{}.html'.format(a,b))
+		else :
+			print('Enter valid choice')
+
+
+# hadoop configuration		
+def hadoop() :
+		os.system('clear')
+		#os.system('tput setab 3')
+		print('''Menu to configure hadoop 1.Install  2.configure master  3.configure slave  4.configure client''')
+		ii=int(input('Enter Choice:'))
+		if ii==1:
+			os.system('yum install hadoop')
+		elif ii==2:
+			path=input('Enter name of folder you want to share=')
+			updatehdfsm('/etc/hadoop/hdfs-site.xml',path)
+			os.system('ifconfig enp0s3')
+			ip=input('Enter your ip=')
+			port=int(input('Enter your port no.='))
+			updatecore('/etc/hadoop/core-site.xml',ip,port)
+			
+		elif ii==3:
+			path=input('Enter name of folder you want to share=')
+			updatehdfss('/etc/hadoop/hdfs-site.xml',path)
+			os.system('ifconfig enp0s3')
+			ip=input('Enter your ip=')
+			port=int(input('Enter your port no.='))
+			updatecore("/etc/hadoop/core-site.xml",ip,port)
+			
+		elif ii==4:
+			os.system('ifconfig enp0s3')
+			ip=input('Enter your ip=')
+			port=int(input('Enter your port no.='))
+			updatecore("/etc/hadoop/core-site.xml",ip,port)			
+		else :
+			print("Enter valid input")
+
+
+#configure core file  for all
+def updatecore(fn,ip,port):
+	tree=ET.ElementTree(file=fn)
+	root=tree.getroot()
+	for nam in root.iter("value"):
+		print('done')
+		nam.text="hdfs://{}:{}".format(ip,port)
+	for nam in root.iter("name"):
+		nam.text="fs.default.name"
+	tree=ET.ElementTree(root)
+	with open(fn,"wb") as fupdate :
+		tree.write(fupdate)
+
+# configure  hdfs file in master
+def updatehdfsm(fn,path):
+	tree=ET.ElementTree(file=fn)
+	root=tree.getroot()
+	for val in root.iter("value"):
+		val.text="/{}".format(path)
+	for nam in root.iter("name"):
+		nam.text="/dfs.name.dir"
+	tree=ET.ElementTree(root)
+	with open(fn,"wb") as fupdate :
+		tree.write(fupdate)
+
+# cocfifure hdfs....  file in slave
+def updatehdfss(fn,path):
+	tree=ET.ElementTree(file=fn)
+	root=tree.getroot()
+	for val in root.iter("value"):
+		val.text="/{}".format(path)
+	for nam in root.iter("name"):
+		nam.text="/dfs.data.dir"
+	tree=ET.ElementTree(root)
+	with open(fn,"wb") as fupdate :
+		tree.write(fupdate)
+
+#start 
+while True:
+	print('-------------------------Welcome to Menu ----------------------------')
+	print('''what you want to USe\n 1.System cmd 2.Service  3.exit''')
+	i=int(input('Enter choice: '))
+	if i==1 :
+		os.system('clear')	
+		print('''1.Date 2.Calander 3.list of all process 4.exit''')
+		s=int(input('Enter choice: '))
+		if s==1 :
+			os.system('date')
+		elif s==2 :
+			os.system('cal')
+		elif s==3 :
+			os.system('ps -aux')
+		elif s==4 :
+			exit()
+		else :
+			print('Enter valid choice')
+
+	elif i==2 :
+		while True:
+			os.system('clear')
+			print('''Slect option which service you want to use 1.Webserice 2.Docker 3.Hadoop ''')
+			s=int(input('Enter choice: '))
+			if s==1:
+				while True:
+					webserver()
+					b=input("Enter b/B to go in last menu continue it press c:")
+					if (b=='b')or(b=='B'):
+						break			
+				
+			elif s==2:
+				while True:
+					docker()
+					b=input("Enter b/B to go in last menu continue it press c:")
+					if (b=='b')or(b=='B'):
+						break		
+				
+			elif s==3:
+				while True:
+					hadoop()
+					b=input("Enter b/B to go in last menu continue press c:")
+					if (b=='b')or(b=='B'):
+						break
+				
+			else:
+				print('Enter valid choice')
+			b=input('Enter b/B for go in back menu for continue c:')
+			if (b=='b')or(b=='B'):
+				break
+	elif i==3:
+		exit()
+	else :
+		print('Enter valid choice')		
+
+
